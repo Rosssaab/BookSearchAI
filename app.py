@@ -2,21 +2,17 @@ import os
 from flask import Flask, render_template, request, jsonify
 import requests
 from datetime import datetime
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Get API key from environment variable
-GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
+GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY')
 GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes'
 
 # Check if API key is set
 if not GOOGLE_BOOKS_API_KEY:
-    raise ValueError("GOOGLE_BOOKS_API_KEY is not set in the environment variables")
+    print("Warning: GOOGLE_BOOKS_API_KEY is not set in the environment variables")
 
 @app.route('/')
 def index():
@@ -24,13 +20,13 @@ def index():
     genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]  # Add or modify genres as needed
     return render_template('index.html', current_year=current_year, genres=genres)
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET'])
 def search():
-    start_year = request.form.get('start_year', '1950')
-    end_year = request.form.get('end_year', str(datetime.now().year))
-    author = request.form.get('author', '')
-    title = request.form.get('title', '')
-    genres = request.form.getlist('genres')
+    start_year = request.args.get('start_year', '1950')
+    end_year = request.args.get('end_year', str(datetime.now().year))
+    author = request.args.get('author', '')
+    title = request.args.get('title', '')
+    genres = request.args.getlist('genres')
 
     query_parts = []
     if title:
@@ -68,6 +64,6 @@ def search():
         return jsonify(books)
     else:
         return jsonify({'error': 'Failed to fetch books from Google Books API'}), 500
-    
+
 if __name__ == '__main__':
-    app.run(debug=False)  # Set to False for production
+    app.run()

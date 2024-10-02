@@ -190,10 +190,10 @@ document.addEventListener('DOMContentLoaded', function() {
             resetSearch();
         } else {
             const formData = new FormData(this);
+            const searchParams = new URLSearchParams(formData);
             searchingModal.style.display = 'block';
-            fetch('/search', {
-                method: 'POST',
-                body: formData
+            fetch('/search?' + searchParams.toString(), {
+                method: 'GET'
             })
             .then(response => response.json())
             .then(books => {
