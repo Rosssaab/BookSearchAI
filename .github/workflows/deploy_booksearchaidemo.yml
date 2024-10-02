@@ -1,15 +1,15 @@
-name: Deploy to Azure Web App
+name: Deploy BookSearchAiDemo to Azure Web App
 
 on:
   push:
     branches:
-      - master
+      - master  # or main, depending on your default branch name
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
     - uses: actions/checkout@v4
 
