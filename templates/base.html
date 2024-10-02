@@ -3,23 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Search AI</title>
+    <title>{% block title %}Ross's Demo AI Book Search{% endblock %}</title>
     <!-- Bootstrap CSS (Solar theme as default) -->
     <link id="theme-style" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.1/dist/solar/bootstrap.min.css">
-    {% block styles %}{% endblock %}
+    <style>
+        html, body {
+            min-height: 100vh;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+        .container {
+            flex: 1;
+        }
+        footer {
+            margin-top: auto;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Book Search AI</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">Ross's Demo AI Book Search</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">Home</a>
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                     </li>
+                    <!-- Add more nav items here as you create the corresponding routes -->
                 </ul>
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -54,40 +72,51 @@
         </div>
     </nav>
 
-    <div class="container my-5">
+    <div class="container my-4">
         {% block content %}{% endblock %}
     </div>
+
+    <footer class="bg-dark text-light py-3">
+        <div class="container text-center">
+            &copy; {{ current_year }} Ross's Demo AI Book Search. All rights reserved.
+        </div>
+    </footer>
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Your custom script -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    {% block scripts %}{% endblock %}
+    {% block extra_js %}{% endblock %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const themeStyle = document.getElementById('theme-style');
             const dropdownMenu = document.querySelector('.dropdown-menu');
             
+            function applyTheme(theme) {
+                if (theme === 'default') {
+                    themeStyle.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
+                } else {
+                    themeStyle.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.1/dist/${theme}/bootstrap.min.css`;
+                }
+                document.body.className = theme;
+                // Force a repaint to ensure the background color is updated
+                document.body.style.display = 'none';
+                document.body.offsetHeight; // Trigger a reflow
+                document.body.style.display = '';
+            }
+
             dropdownMenu.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (e.target.hasAttribute('data-theme')) {
                     const theme = e.target.getAttribute('data-theme');
-                    if (theme === 'default') {
-                        themeStyle.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
-                    } else {
-                        themeStyle.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.1/dist/${theme}/bootstrap.min.css`;
-                    }
+                    applyTheme(theme);
                     localStorage.setItem('theme', theme);
                 }
             });
 
             // Load saved theme or set to Solar if no theme is saved
             const savedTheme = localStorage.getItem('theme') || 'solar';
-            if (savedTheme === 'default') {
-                themeStyle.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
-            } else {
-                themeStyle.href = `https://cdn.jsdelivr.net/npm/bootswatch@5.3.1/dist/${savedTheme}/bootstrap.min.css`;
-            }
+            applyTheme(savedTheme);
         });
     </script>
 </body>

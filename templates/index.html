@@ -1,38 +1,72 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<style>
+    .table {
+        background-color: var(--bs-body-bg);
+        width: 800px;
+        margin: auto;
+    }
+    .table th {
+        width: 25%;
+        vertical-align: middle;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .form-check-label {
+        margin-left: 5px;
+    }
+    .row-cols-3 > * {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">Book Search</h1>
-<form id="searchForm">
-    <div class="mb-3">
-        <label for="queryInput" class="form-label">General Query:</label>
-        <input type="text" class="form-control" id="queryInput" name="query" placeholder="Enter your book search query">
-    </div>
-    <div class="mb-3">
-        <label for="authorInput" class="form-label">Author:</label>
-        <input type="text" class="form-control" id="authorInput" name="author" placeholder="Enter author name (optional)">
-    </div>
-    <div class="mb-3">
-        <label for="titleInput" class="form-label">Title Contains:</label>
-        <input type="text" class="form-control" id="titleInput" name="title" placeholder="Enter part of the title (optional)">
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Genres:</label>
-        <div class="row">
-            {% for i in range(0, genres|length, 3) %}
-                <div class="col-md-4">
-                    {% for j in range(3) %}
-                        {% if i + j < genres|length %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="{{ genres[i+j] }}" name="genres" value="{{ genres[i+j] }}">
-                                <label class="form-check-label" for="{{ genres[i+j] }}">{{ genres[i+j] }}</label>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <h1 class="text-center mb-4">Ross's Demo AI Book Search</h1>
+            <form id="searchForm">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="queryInput" class="form-label">General Query:</label></th>
+                            <td><input type="text" class="form-control" id="queryInput" name="query" placeholder="Enter your book search query"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="authorInput" class="form-label">Author:</label></th>
+                            <td><input type="text" class="form-control" id="authorInput" name="author" placeholder="Enter author name (optional)"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="titleInput" class="form-label">Title Contains:</label></th>
+                            <td><input type="text" class="form-control" id="titleInput" name="title" placeholder="Enter part of the title (optional)"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label class="form-label">Genres:</label></th>
+                            <td>
+                                <div class="row row-cols-3 g-2">
+                                    {% for genre in genres %}
+                                        <div class="col">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="{{ genre }}" name="genres" value="{{ genre }}">
+                                                <label class="form-check-label" for="{{ genre }}">{{ genre }}</label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary">Search</button>
                 </div>
-            {% endfor %}
+            </form>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
-<div id="results" class="mt-4"></div>
+    <div id="results" class="mt-4"></div>
+</div>
 {% endblock %}

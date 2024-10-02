@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import requests
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 load_dotenv()
 CHATON_API_KEY = os.getenv('CHATON_API_KEY')
@@ -9,7 +10,7 @@ CHATON_API_URL = os.getenv('CHATON_API_URL')
 
 app = Flask(__name__)
 
-# List of top 12 popular genres
+# List of genres (make sure this is defined)
 GENRES = [
     "Fiction", "Non-fiction", "Mystery", "Thriller", "Romance", "Science Fiction",
     "Fantasy", "Horror", "Biography", "History", "Self-help", "Children's"
@@ -17,7 +18,9 @@ GENRES = [
 
 @app.route('/')
 def index():
-    return render_template('index.html', genres=GENRES)
+    current_year = datetime.now().year
+    return render_template('index.html', genres=GENRES, current_year=current_year)
+
 
 @app.route('/search', methods=['POST'])
 def search():
