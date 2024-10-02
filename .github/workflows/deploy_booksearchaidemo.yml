@@ -9,6 +9,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      AZURE_APP_ID: ${{ secrets.AZURE_APP_ID }}
+      AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
     steps:
     - uses: actions/checkout@v4
@@ -33,8 +37,14 @@ jobs:
 
     - name: Azure Login
       run: |
-        az login --service-principal --username "${{ secrets.AZURE_APP_ID }}" --password "${{ secrets.AZURE_PASSWORD }}" --tenant "${{ secrets.AZURE_TENANT_ID }}"
+        az login --service-principal \
+          --username "$AZURE_APP_ID" \
+          --password "$AZURE_PASSWORD" \
+          --tenant "$AZURE_TENANT_ID"
 
     - name: Deploy to Azure Web App
       run: |
-        az webapp deployment source config-zip --resource-group BookStoreResourceGroup --name BookSearchAiDemo --src deploy.zip
+        az webapp deployment source config-zip \
+          --resource-group BookStoreResourceGroup \
+          --name BookSearchAiDemo \
+          --src deploy.zip
