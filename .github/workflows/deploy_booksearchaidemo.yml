@@ -27,6 +27,12 @@ jobs:
     - name: Create deployment package
       run: zip -r deploy.zip . -x '*.git*'
 
+    - name: Debug Information
+      run: |
+        echo "App Name: BookSearchAiDemo"
+        echo "Package Path: ./deploy.zip"
+        ls -la
+
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
