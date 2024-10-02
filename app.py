@@ -66,4 +66,4 @@ def search():
         return jsonify({'error': 'Failed to fetch books from Google Books API'}), 500
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8000)
