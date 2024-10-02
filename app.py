@@ -14,15 +14,14 @@ app = Flask(__name__)
 GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
 GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes'
 
-# Check if API key is set
-if not GOOGLE_BOOKS_API_KEY:
-    raise ValueError("GOOGLE_BOOKS_API_KEY is not set in the environment variables")
+# Your routes and other app logic follow...
 
 @app.route('/')
 def index():
     current_year = datetime.now().year
     genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]  # Add or modify genres as needed
     return render_template('index.html', current_year=current_year, genres=genres)
+
 
 @app.route('/search', methods=['POST'])
 def search():
@@ -45,7 +44,7 @@ def search():
     params = {
         'q': query,
         'key': GOOGLE_BOOKS_API_KEY,
-        'maxResults': 40,  # Increased from 10 to get more results
+        'maxResults': 10,  # Adjust as needed
         'langRestrict': 'en'  # Restrict to English books
     }
 
@@ -70,4 +69,4 @@ def search():
         return jsonify({'error': 'Failed to fetch books from Google Books API'}), 500
     
 if __name__ == '__main__':
-    app.run(debug=False)  # Set to False for production
+    app.run(debug=True)
