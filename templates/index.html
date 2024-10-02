@@ -1,25 +1,18 @@
 {% extends "base.html" %}
 
-{% block styles %}
+{% block extra_css %}
 <style>
-    .table {
-        background-color: var(--bs-body-bg);
-        width: 800px;
-        margin: auto;
+    .year-range-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
     }
-    .table th {
-        width: 25%;
-        vertical-align: middle;
+    .year-display {
+        font-weight: bold;
+        text-align: center;
     }
-    .table td {
-        vertical-align: middle;
-    }
-    .form-check-label {
-        margin-left: 5px;
-    }
-    .row-cols-3 > * {
-        padding-right: 10px;
-        padding-left: 10px;
+    .all-years-checkbox {
+        margin-top: 10px;
     }
 </style>
 {% endblock %}
@@ -33,8 +26,32 @@
                 <table class="table table-bordered">
                     <tbody>
                         <tr>
-                            <th scope="row"><label for="queryInput" class="form-label">General Query:</label></th>
-                            <td><input type="text" class="form-control" id="queryInput" name="query" placeholder="Enter your book search query"></td>
+                            <th scope="row">
+                                <label for="startYearInput" class="form-label">Start Year:</label>
+                                <div class="all-years-checkbox">
+                                    <input type="checkbox" class="form-check-input" id="allYearsCheckbox">
+                                    <label class="form-check-label" for="allYearsCheckbox">All years</label>
+                                </div>
+                            </th>
+                            <td>
+                                <input type="range" class="form-range" id="startYearInput" name="start_year" min="1950" max="{{ current_year }}" value="1950">
+                                <div class="year-range-labels">
+                                    <span>1950</span>
+                                    <span id="selectedStartYear" class="year-display">1950</span>
+                                    <span>{{ current_year }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="endYearInput" class="form-label">End Year:</label></th>
+                            <td>
+                                <input type="range" class="form-range" id="endYearInput" name="end_year" min="1950" max="{{ current_year }}" value="{{ current_year }}">
+                                <div class="year-range-labels">
+                                    <span>1950</span>
+                                    <span id="selectedEndYear" class="year-display">{{ current_year }}</span>
+                                    <span>{{ current_year }}</span>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <th scope="row"><label for="authorInput" class="form-label">Author:</label></th>
@@ -69,4 +86,40 @@
     </div>
     <div id="results" class="mt-4"></div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startYearInput = document.getElementById('startYearInput');
+        const endYearInput = document.getElementById('endYearInput');
+        const selectedStartYear = document.getElementById('selectedStartYear');
+        const selectedEndYear = document.getElementById('selectedEndYear');
+        const allYearsCheckbox = document.getElementById('allYearsCheckbox');
+
+        function updateYearDisplay() {
+            if (allYearsCheckbox.checked) {
+                selectedStartYear.textContent = 'All';
+                startYearInput.disabled = true;
+            } else {
+                selectedStartYear.textContent = startYearInput.value;
+                startYearInput.disabled = false;
+            }
+            selectedEndYear.textContent = endYearInput.value;
+
+            // Ensure end year is not less than start year
+            if (!allYearsCheckbox.checked && parseInt(endYearInput.value) < parseInt(startYearInput.value)) {
+                endYearInput.value = startYearInput.value;
+                selectedEndYear.textContent = startYearInput.value;
+            }
+        }
+
+        startYearInput.addEventListener('input', updateYearDisplay);
+        endYearInput.addEventListener('input', updateYearDisplay);
+        allYearsCheckbox.addEventListener('change', updateYearDisplay);
+
+        // Initialize
+        updateYearDisplay();
+    });
+</script>
 {% endblock %}
