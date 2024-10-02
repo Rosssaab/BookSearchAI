@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="mb-4">Search for Books</h1>
+    <form method="POST" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search_query" class="form-control" placeholder="Enter book title or author">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    {% if results %}
+        <h2>Search Results:</h2>
+        <ul class="list-group">
+            {% for book in results %}
+                <li class="list-group-item">{{ book.title }} by {{ book.author }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

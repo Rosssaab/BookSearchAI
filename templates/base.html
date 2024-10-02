@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ross's Demo AI Book Search App{% endblock %}</title>
+    <link id="theme-style" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.2.3/dist/solar/bootstrap.min.css">
+    <style>
+        .theme-selector {
+            display: flex;
+            align-items: center;
+        }
+        .theme-selector label {
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Ross'a Demo AI Book Search App</a>
+            <div class="theme-selector ms-auto">
+                <label for="theme-select">Theme:</label>
+                <select id="theme-select" class="form-select form-select-sm" style="width: auto;">
+                    <option value="cerulean">Cerulean</option>
+                    <option value="darkly">Darkly</option>
+                    <option value="flatly">Flatly</option>
+                    <option value="journal">Journal</option>
+                    <option value="litera">Litera</option>
+                    <option value="lumen">Lumen</option>
+                    <option value="lux">Lux</option>
+                    <option value="materia">Materia</option>
+                    <option value="minty">Minty</option>
+                    <option value="pulse">Pulse</option>
+                    <option value="sandstone">Sandstone</option>
+                    <option value="simplex">Simplex</option>
+                    <option value="sketchy">Sketchy</option>
+                    <option value="slate">Slate</option>
+                    <option value="solar" selected>Solar</option>
+                    <option value="spacelab">Spacelab</option>
+                    <option value="superhero">Superhero</option>
+                    <option value="united">United</option>
+                    <option value="yeti">Yeti</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">&copy; Ross's Demo AI Book Search App</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
