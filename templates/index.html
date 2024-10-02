@@ -1,20 +1,38 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1 class="mb-4">Search for Books</h1>
-    <form method="POST" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="search_query" class="form-control" placeholder="Enter book title or author">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-    </form>
-
-    {% if results %}
-        <h2>Search Results:</h2>
-        <ul class="list-group">
-            {% for book in results %}
-                <li class="list-group-item">{{ book.title }} by {{ book.author }}</li>
+<h1 class="mb-4">Book Search</h1>
+<form id="searchForm">
+    <div class="mb-3">
+        <label for="queryInput" class="form-label">General Query:</label>
+        <input type="text" class="form-control" id="queryInput" name="query" placeholder="Enter your book search query">
+    </div>
+    <div class="mb-3">
+        <label for="authorInput" class="form-label">Author:</label>
+        <input type="text" class="form-control" id="authorInput" name="author" placeholder="Enter author name (optional)">
+    </div>
+    <div class="mb-3">
+        <label for="titleInput" class="form-label">Title Contains:</label>
+        <input type="text" class="form-control" id="titleInput" name="title" placeholder="Enter part of the title (optional)">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Genres:</label>
+        <div class="row">
+            {% for i in range(0, genres|length, 3) %}
+                <div class="col-md-4">
+                    {% for j in range(3) %}
+                        {% if i + j < genres|length %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="{{ genres[i+j] }}" name="genres" value="{{ genres[i+j] }}">
+                                <label class="form-check-label" for="{{ genres[i+j] }}">{{ genres[i+j] }}</label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endfor %}
-        </ul>
-    {% endif %}
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<div id="results" class="mt-4"></div>
 {% endblock %}

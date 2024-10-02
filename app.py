@@ -5,29 +5,46 @@ import os
 
 load_dotenv()
 CHATON_API_KEY = os.getenv('CHATON_API_KEY')
-CHATON_API_URL = os.getenv('CHATON_API_URL')  # Add this to your .env file
+CHATON_API_URL = os.getenv('CHATON_API_URL')
 
 app = Flask(__name__)
 
+# List of top 12 popular genres
+GENRES = [
+    "Fiction", "Non-fiction", "Mystery", "Thriller", "Romance", "Science Fiction",
+    "Fantasy", "Horror", "Biography", "History", "Self-help", "Children's"
+]
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', genres=GENRES)
 
 @app.route('/search', methods=['POST'])
 def search():
-    query = request.json['query']
-    
+    data = request.json
+    query = data.get('query', '')
+    author = data.get('author', '')
+    title = data.get('title', '')
+    genres = data.get('genres', [])
+
+    # Construct a more detailed prompt for ChatOn
+    prompt = f"Search for books with the following criteria:\n"
+    prompt += f"General query: {query}\n" if query else ""
+    prompt += f"Author: {author}\n" if author else ""
+    prompt += f"Title contains: {title}\n" if title else ""
+    prompt += f"Genres: {', '.join(genres)}\n" if genres else ""
+
     # Make a request to the ChatOn API
     headers = {
         'Authorization': f'Bearer {CHATON_API_KEY}',
         'Content-Type': 'application/json'
     }
-    data = {
-        'prompt': query,
+    api_data = {
+        'prompt': prompt,
         # Add any other parameters required by ChatOn API
     }
     
-    response = requests.post(CHATON_API_URL, json=data, headers=headers)
+    response = requests.post(CHATON_API_URL, json=api_data, headers=headers)
     
     if response.status_code == 200:
         return jsonify(response.json())
