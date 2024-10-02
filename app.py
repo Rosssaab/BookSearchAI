@@ -1,58 +1,72 @@
+import os
 from flask import Flask, render_template, request, jsonify
 import requests
-from dotenv import load_dotenv
-import os
 from datetime import datetime
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
-CHATON_API_KEY = os.getenv('CHATON_API_KEY')
-CHATON_API_URL = os.getenv('CHATON_API_URL')
 
+# Initialize Flask app
 app = Flask(__name__)
 
-# List of genres (make sure this is defined)
-GENRES = [
-    "Fiction", "Non-fiction", "Mystery", "Thriller", "Romance", "Science Fiction",
-    "Fantasy", "Horror", "Biography", "History", "Self-help", "Children's"
-]
+# Get API key from environment variable
+GOOGLE_BOOKS_API_KEY = os.getenv('GOOGLE_BOOKS_API_KEY')
+GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes'
+
+# Your routes and other app logic follow...
 
 @app.route('/')
 def index():
     current_year = datetime.now().year
-    return render_template('index.html', genres=GENRES, current_year=current_year)
+    genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]  # Add or modify genres as needed
+    return render_template('index.html', current_year=current_year, genres=genres)
 
 
 @app.route('/search', methods=['POST'])
 def search():
-    data = request.json
-    query = data.get('query', '')
-    author = data.get('author', '')
-    title = data.get('title', '')
-    genres = data.get('genres', [])
+    start_year = request.form.get('start_year', '1950')
+    end_year = request.form.get('end_year', str(datetime.now().year))
+    author = request.form.get('author', '')
+    title = request.form.get('title', '')
+    genres = request.form.getlist('genres')
 
-    # Construct a more detailed prompt for ChatOn
-    prompt = f"Search for books with the following criteria:\n"
-    prompt += f"General query: {query}\n" if query else ""
-    prompt += f"Author: {author}\n" if author else ""
-    prompt += f"Title contains: {title}\n" if title else ""
-    prompt += f"Genres: {', '.join(genres)}\n" if genres else ""
+    query_parts = []
+    if title:
+        query_parts.append(f'intitle:{title}')
+    if author:
+        query_parts.append(f'inauthor:{author}')
+    if genres:
+        query_parts.extend(f'subject:{genre}' for genre in genres)
 
-    # Make a request to the ChatOn API
-    headers = {
-        'Authorization': f'Bearer {CHATON_API_KEY}',
-        'Content-Type': 'application/json'
+    query = ' '.join(query_parts)
+
+    params = {
+        'q': query,
+        'key': GOOGLE_BOOKS_API_KEY,
+        'maxResults': 10,  # Adjust as needed
+        'langRestrict': 'en'  # Restrict to English books
     }
-    api_data = {
-        'prompt': prompt,
-        # Add any other parameters required by ChatOn API
-    }
-    
-    response = requests.post(CHATON_API_URL, json=api_data, headers=headers)
+
+    response = requests.get(GOOGLE_BOOKS_API_URL, params=params)
     
     if response.status_code == 200:
-        return jsonify(response.json())
+        books_data = response.json().get('items', [])
+        books = []
+        for book in books_data:
+            volume_info = book.get('volumeInfo', {})
+            published_date = volume_info.get('publishedDate', '')[:4]  # Get just the year
+            if start_year <= published_date <= end_year:
+                books.append({
+                    'title': volume_info.get('title', 'Unknown Title'),
+                    'authors': volume_info.get('authors', ['Unknown Author']),
+                    'publishedDate': published_date,
+                    'description': volume_info.get('description', 'No description available'),
+                    'imageLinks': volume_info.get('imageLinks', {})
+                })
+        return jsonify(books)
     else:
-        return jsonify({'error': 'Failed to get response from ChatOn'}), 500
-
+        return jsonify({'error': 'Failed to fetch books from Google Books API'}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)
