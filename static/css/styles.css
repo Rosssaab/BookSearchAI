@@ -66,7 +66,7 @@ body {
 
 #imageModal .modal-content {
     width: 90%;
-    max-width: 90%;
+    max-width: 800px;
     height: 90vh;
     background-color: transparent;
     border: none;
@@ -75,11 +75,12 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    margin: 5vh auto;
 }
 
 #imageModal img {
     max-width: 100%;
-    max-height: calc(90vh - 80px); /* Subtract space for the button */
+    max-height: calc(80vh - 60px);
     width: auto;
     height: auto;
     object-fit: contain;
@@ -102,19 +103,105 @@ body {
     background-color: #45a049;
 }
 
+#expandButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+}
+
+#visitorCounter {
+    display: inline-block;
+    margin-right: 10px;
+    color: #6c757d;
+}
+
+.theme-visitor-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.table img.book-image {
+    max-width: 100%;
+    height: auto;
+    min-width: 100px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table h5 {
+    margin-bottom: 0.5rem;
+}
+
+.table p {
+    margin-bottom: 0.25rem;
+}
+
+.read-more {
+    padding: 0;
+    font-size: 0.9em;
+    text-decoration: underline;
+    color: #007bff;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.read-more:hover {
+    color: #0056b3;
+}
+
+/* Mobile-specific styles */
 @media (max-width: 768px) {
+    .table td {
+        display: block;
+        width: 100%;
+    }
+
+    .table td:first-child {
+        text-align: center;
+    }
+
+    .table img.book-image {
+        max-width: 150px;
+        margin-bottom: 15px;
+    }
+
     #imageModal .modal-content {
         width: 95%;
-        max-width: 95%;
         height: 95vh;
+        margin: 2.5vh auto;
     }
 
     #imageModal img {
-        max-height: calc(95vh - 70px); /* Adjust for smaller button on mobile */
+        max-height: calc(85vh - 60px);
     }
 
     #buyButton {
         padding: 8px 16px;
         font-size: 1em;
+    }
+
+    .theme-visitor-container {
+        position: static;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+}
+
+/* Desktop-specific styles */
+@media (min-width: 769px) {
+    #imageModal .modal-content {
+        min-width: 600px;
+    }
+
+    #imageModal img {
+        min-height: 400px;
     }
 }
