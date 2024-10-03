@@ -29,39 +29,39 @@ document.addEventListener('DOMContentLoaded', function() {
         
         books.forEach(book => {
             const row = document.createElement('tr');
+            const truncatedDescription = truncateText(book.description, 30);
+            const isTextTruncated = truncatedDescription !== book.description;
+            
             row.innerHTML = `
                 <td class="col-md-2">
-                    <img src="${book.imageLinks.thumbnail || 'placeholder.jpg'}" alt="${book.title}" class="img-fluid book-image" data-full-image="${book.imageLinks.small || book.imageLinks.thumbnail || 'placeholder.jpg'}">
+                    <img src="${book.imageLinks.thumbnail || 'placeholder.jpg'}" alt="${book.title}" class="img-fluid book-image" data-full-image="${book.imageLinks.small || book.imageLinks.thumbnail || 'placeholder.jpg'}" data-isbn="${book.isbn}">
                 </td>
                 <td class="col-md-10">
                     <h5>${book.title}</h5>
                     <p>Author: ${book.authors.join(', ')}</p>
                     <p>Published: ${book.publishedDate}</p>
-                    <p>${truncateText(book.description, 30)}</p>
+                    <p class="book-description">${truncatedDescription}</p>
+                    ${isTextTruncated ? '<button class="btn btn-link read-more">Read more</button>' : ''}
                     <p><small class="text-muted">ISBN: ${book.isbn}</small></p>
                 </td>
             `;
             tableBody.appendChild(row);
+            
+            // ... (rest of the code for read more/less functionality)
         });
-
-        if (currentIndex + booksPerPage < allBooks.length) {
-            const moreButton = document.createElement('button');
-            moreButton.id = 'moreButton';
-            moreButton.className = 'btn btn-primary mt-3';
-            moreButton.textContent = 'Load More';
-            moreButton.addEventListener('click', loadMoreResults);
-            resultsDiv.appendChild(moreButton);
-        }
-
+    
         document.querySelectorAll('.book-image').forEach(img => {
             img.addEventListener('click', function() {
                 modalImage.src = this.dataset.fullImage;
                 imageModal.style.display = 'block';
-                buyButton.href = `https://www.amazon.com/s?k=${encodeURIComponent(this.alt)}`;
+                buyButton.href = `https://www.amazon.co.uk/s?k=${encodeURIComponent(this.dataset.isbn)}`;
             });
         });
+    
+        // ... (rest of the displayResults function)
     }
-
+    
+    // ... (rest of the script.js file)
     function loadMoreResults() {
         currentIndex += booksPerPage;
         displayResults(allBooks.slice(currentIndex, currentIndex + booksPerPage));
