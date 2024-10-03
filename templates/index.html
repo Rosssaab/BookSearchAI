@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
             bookImage.addEventListener('click', function() {
                 modalImage.src = this.dataset.fullImage;
                 buyButton.href = this.dataset.amazonLink;
-                isbnText.textContent = `ISBN: ${this.dataset.isbn}`;
+                // isbnText.textContent = `ISBN: ${this.dataset.isbn}`;
                 imageModal.style.display = 'block';
             });
         });
