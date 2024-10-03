@@ -14,11 +14,27 @@ GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes'
 if not GOOGLE_BOOKS_API_KEY:
     print("Warning: GOOGLE_BOOKS_API_KEY is not set in the environment variables")
 
+# Visitor counter function
+def get_visitor_count():
+    count_file = 'visitor_count.txt'
+    if not os.path.exists(count_file):
+        with open(count_file, 'w') as f:
+            f.write('100')
+        return 100
+    with open(count_file, 'r+') as f:
+        count = int(f.read() or '100')
+        count += 1
+        f.seek(0)
+        f.write(str(count))
+        f.truncate()
+    return count
+
 @app.route('/')
 def index():
     current_year = datetime.now().year
-    genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]  # Add or modify genres as needed
-    return render_template('index.html', current_year=current_year, genres=genres)
+    genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]
+    visitor_count = get_visitor_count()
+    return render_template('index.html', current_year=current_year, genres=genres, visitor_count=visitor_count)
 
 @app.route('/search', methods=['GET'])
 def search():
@@ -44,8 +60,8 @@ def search():
     params = {
         'q': query,
         'key': GOOGLE_BOOKS_API_KEY,
-        'maxResults': 40,  # Increased from 10 to get more results
-        'langRestrict': 'en'  # Restrict to English books
+        'maxResults': 40,
+        'langRestrict': 'en'
     }
 
     response = requests.get(GOOGLE_BOOKS_API_URL, params=params)
@@ -55,7 +71,7 @@ def search():
         books = []
         for book in books_data:
             volume_info = book.get('volumeInfo', {})
-            published_date = volume_info.get('publishedDate', '')[:4]  # Get just the year
+            published_date = volume_info.get('publishedDate', '')[:4]
             if start_year <= published_date <= end_year:
                 isbn = 'No ISBN'
                 for identifier in volume_info.get('industryIdentifiers', []):
