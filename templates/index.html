@@ -10,11 +10,11 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0,0,0,0.7); /* Lighter background */
     }
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto;
+        margin: 5% auto;
         padding: 20px;
         border: 1px solid #888;
         width: 300px;
@@ -34,6 +34,46 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+    .book-image {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    .book-image:hover {
+        transform: scale(1.05);
+    }
+    #imageModal .modal-content {
+        width: auto;
+        max-width: 70%; /* Slightly reduced from 95% */
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    #imageModal img {
+        max-width: none;
+        height: 55vh; /* Reduced from 85vh */
+        width: auto;
+        object-fit: contain;
+        box-shadow: 0 0 30px rgba(255,255,255,0.2);
+    }
+    #buyButton {
+        margin-top: 20px;
+        padding: 15px 30px;
+        font-size: 1.4em;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+    }
+    #buyButton:hover {
+        background-color: #45a049;
+    }
+    #isbnText {
+        color: white;
+        font-size: 1.2em;
+        margin-top: 10px;
+    }
 </style>
 {% endblock %}
 
@@ -51,6 +91,10 @@
                     <label for="titleInput" class="form-label">Title Contains:</label>
                     <input type="text" class="form-control" id="titleInput" name="title" placeholder="Enter part of the title (optional)">
                 </div>
+                <div class="mb-3">
+                    <label for="subjectInput" class="form-label">Subject:</label>
+                    <input type="text" class="form-control" id="subjectInput" name="subject" placeholder="Enter subject (optional)">
+                </div>
                 <div class="text-center mt-3">
                     <button type="submit" id="searchButton" class="btn btn-primary">Search</button>
                 </div>
@@ -60,7 +104,7 @@
     <div id="results" class="mt-4"></div>
 </div>
 
-<!-- Modal -->
+<!-- Searching Modal -->
 <div id="searchingModal" class="modal">
     <div class="modal-content">
         <img src="{{ url_for('static', filename='wait.gif') }}" alt="Searching..." class="searching-gif">
@@ -69,6 +113,15 @@
             <circle cx="25" cy="25" r="20" fill="none" stroke="#000" stroke-width="5" />
         </svg>
         <p>Searching...</p>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <img id="modalImage" src="" alt="Book Cover">
+        <p id="isbnText"></p>
+        <a id="buyButton" href="#" target="_blank" class="btn btn-primary btn-lg">Buy</a>
     </div>
 </div>
 {% endblock %}
@@ -80,6 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultsDiv = document.getElementById('results');
     const searchButton = document.getElementById('searchButton');
     const searchingModal = document.getElementById('searchingModal');
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const buyButton = document.getElementById('buyButton');
+    const isbnText = document.getElementById('isbnText');
 
     function truncateText(text, limit) {
         const words = text.split(' ');
@@ -95,10 +152,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const bookElement = document.createElement('div');
             bookElement.className = 'card mb-3';
             const truncatedDescription = truncateText(book.description, 50);
+            const amazonSearchParam = book.isbn ? book.isbn : encodeURIComponent(book.title);
+            const largeImageUrl = book.imageLinks?.large || book.imageLinks?.thumbnail || 'placeholder.jpg';
             bookElement.innerHTML = `
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <img src="${book.imageLinks?.thumbnail || 'placeholder.jpg'}" class="img-fluid rounded-start" alt="${book.title}">
+                        <img src="${book.imageLinks?.thumbnail || 'placeholder.jpg'}" class="img-fluid rounded-start book-image" alt="${book.title}" data-full-image="${largeImageUrl}" data-amazon-link="https://www.amazon.com/s?k=${amazonSearchParam}" data-isbn="${book.isbn || 'ISBN not available'}">
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -123,6 +182,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.style.display = 'none';
                 });
             }
+
+            // Add event listener for book image
+            const bookImage = bookElement.querySelector('.book-image');
+            bookImage.addEventListener('click', function() {
+                modalImage.src = this.dataset.fullImage;
+                buyButton.href = this.dataset.amazonLink;
+                isbnText.textContent = `ISBN: ${this.dataset.isbn}`;
+                imageModal.style.display = 'block';
+            });
         });
         searchButton.textContent = 'New Search';
         searchButton.classList.remove('btn-primary');
@@ -141,23 +209,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (searchButton.textContent === 'New Search') {
             resetSearch();
         } else {
-            const formData = new FormData(this);
-            const searchParams = new URLSearchParams(formData);
+            const author = document.getElementById('authorInput').value;
+            const title = document.getElementById('titleInput').value;
+            const subject = document.getElementById('subjectInput').value;
+            const searchParams = new URLSearchParams({
+                author: author,
+                title: title,
+                subject: subject
+            });
             searchingModal.style.display = 'block';
-            console.log('Modal should be visible now'); // Debug: added console log
-
-            // Debug: Check if the image is loaded
-            const img = searchingModal.querySelector('img');
-            const svg = searchingModal.querySelector('svg');
-            img.onload = function() {
-                console.log('Image loaded successfully');
-                svg.style.display = 'none';
-            };
-            img.onerror = function() {
-                console.error('Failed to load image');
-                img.style.display = 'none';
-                svg.style.display = 'block';
-            };
 
             fetch('/search?' + searchParams.toString(), {
                 method: 'GET'
@@ -173,6 +233,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 resultsDiv.innerHTML = '<p>An error occurred while fetching results.</p>';
             });
         }
+    });
+
+    // Close the image modal when clicking outside the image or on the image itself
+    imageModal.addEventListener('click', function(e) {
+        if (e.target === imageModal || e.target === modalImage) {
+            imageModal.style.display = 'none';
+        }
+    });
+
+    // Prevent the modal from closing when clicking on the Buy button
+    buyButton.addEventListener('click', function(e) {
+        e.stopPropagation();
     });
 });
 </script>

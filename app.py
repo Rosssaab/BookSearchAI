@@ -26,6 +26,7 @@ def search():
     end_year = request.args.get('end_year', str(datetime.now().year))
     author = request.args.get('author', '')
     title = request.args.get('title', '')
+    subject = request.args.get('subject', '')
     genres = request.args.getlist('genres')
 
     query_parts = []
@@ -33,6 +34,8 @@ def search():
         query_parts.append(f'intitle:{title}')
     if author:
         query_parts.append(f'inauthor:{author}')
+    if subject:
+        query_parts.append(f'subject:{subject}')
     if genres:
         query_parts.extend(f'subject:{genre}' for genre in genres)
 
@@ -54,12 +57,18 @@ def search():
             volume_info = book.get('volumeInfo', {})
             published_date = volume_info.get('publishedDate', '')[:4]  # Get just the year
             if start_year <= published_date <= end_year:
+                isbn = 'No ISBN'
+                for identifier in volume_info.get('industryIdentifiers', []):
+                    if identifier.get('type') in ['ISBN_13', 'ISBN_10']:
+                        isbn = identifier.get('identifier')
+                        break
                 books.append({
                     'title': volume_info.get('title', 'Unknown Title'),
                     'authors': volume_info.get('authors', ['Unknown Author']),
                     'publishedDate': published_date,
                     'description': volume_info.get('description', 'No description available'),
-                    'imageLinks': volume_info.get('imageLinks', {})
+                    'imageLinks': volume_info.get('imageLinks', {}),
+                    'isbn': isbn
                 })
         return jsonify(books)
     else:
