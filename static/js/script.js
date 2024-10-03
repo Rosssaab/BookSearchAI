@@ -41,15 +41,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>Author: ${book.authors.join(', ')}</p>
                     <p>Published: ${book.publishedDate}</p>
                     <p class="book-description">${truncatedDescription}</p>
-                    ${isTextTruncated ? '<button class="btn btn-link read-more">Read more</button>' : ''}
+                    ${isTextTruncated ? '<button class="btn btn-link read-more-less">Read more</button>' : ''}
                     <p><small class="text-muted">ISBN: ${book.isbn}</small></p>
                 </td>
             `;
             tableBody.appendChild(row);
             
-            // ... (rest of the code for read more/less functionality)
+            if (isTextTruncated) {
+                const readMoreLessBtn = row.querySelector('.read-more-less');
+                const descriptionP = row.querySelector('.book-description');
+                readMoreLessBtn.addEventListener('click', function() {
+                    if (this.textContent === 'Read more') {
+                        descriptionP.textContent = book.description;
+                        this.textContent = 'Read less';
+                    } else {
+                        descriptionP.textContent = truncatedDescription;
+                        this.textContent = 'Read more';
+                    }
+                });
+            }
         });
-    
+
         document.querySelectorAll('.book-image').forEach(img => {
             img.addEventListener('click', function() {
                 modalImage.src = this.dataset.fullImage;
@@ -57,32 +69,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 buyButton.href = `https://www.amazon.co.uk/s?k=${encodeURIComponent(this.dataset.isbn)}`;
             });
         });
-    
-        // ... (rest of the displayResults function)
     }
-    
-    // ... (rest of the script.js file)
+
     function loadMoreResults() {
         currentIndex += booksPerPage;
         displayResults(allBooks.slice(currentIndex, currentIndex + booksPerPage));
     }
 
-// ... (keep the existing code at the beginning)
+    function shrinkSearchArea() {
+        document.getElementById('searchAreaWrapper').style.display = 'none';
+        expandButton.style.display = 'block';
+    }
 
-function shrinkSearchArea() {
-    document.getElementById('searchAreaWrapper').style.display = 'none';
-    expandButton.style.display = 'block';
-}
+    function expandSearchArea() {
+        document.getElementById('searchAreaWrapper').style.display = 'flex';
+        expandButton.style.display = 'none';
+        resultsDiv.innerHTML = '';
+        resetSearch();
+        window.scrollTo(0, 0);
+    }
 
-function expandSearchArea() {
-    document.getElementById('searchAreaWrapper').style.display = 'flex';
-    expandButton.style.display = 'none';
-    resultsDiv.innerHTML = '';
-    resetSearch();
-    window.scrollTo(0, 0);
-}
-
-// ... (keep the rest of the code the same)
     function resetSearch() {
         searchButton.textContent = 'Search';
         searchButton.classList.remove('btn-secondary');
