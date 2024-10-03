@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchArea = document.getElementById('searchArea');
     const expandButton = document.getElementById('expandButton');
     const themeSelector = document.getElementById('themeSelector');
+    const themeLink = document.getElementById('theme-css');
 
     function truncateText(text, limit) {
         const words = text.split(' ');
@@ -23,29 +24,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displayResults(books) {
-        resultsDiv.innerHTML = '';
+        resultsDiv.innerHTML = '<table class="table table-hover"><tbody></tbody></table>';
+        const tableBody = resultsDiv.querySelector('tbody');
+        
         books.forEach(book => {
-            const bookDiv = document.createElement('div');
-            bookDiv.className = 'book-item mb-4';
-            bookDiv.innerHTML = `
-                <div class="card">
-                    <div class="row g-0">
-                        <div class="col-md-4">
-                            <img src="${book.imageLinks.thumbnail || 'placeholder.jpg'}" alt="${book.title}" class="img-fluid book-image" data-full-image="${book.imageLinks.small || book.imageLinks.thumbnail || 'placeholder.jpg'}">
-                        </div>
-                        <div class="col-md-8">
-                            <div class="card-body">
-                                <h5 class="card-title">${book.title}</h5>
-                                <p class="card-text">Author: ${book.authors.join(', ')}</p>
-                                <p class="card-text">Published: ${book.publishedDate}</p>
-                                <p class="card-text">${truncateText(book.description, 30)}</p>
-                                <p class="card-text"><small class="text-muted">ISBN: ${book.isbn}</small></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="col-md-2">
+                    <img src="${book.imageLinks.thumbnail || 'placeholder.jpg'}" alt="${book.title}" class="img-fluid book-image" data-full-image="${book.imageLinks.small || book.imageLinks.thumbnail || 'placeholder.jpg'}">
+                </td>
+                <td class="col-md-10">
+                    <h5>${book.title}</h5>
+                    <p>Author: ${book.authors.join(', ')}</p>
+                    <p>Published: ${book.publishedDate}</p>
+                    <p>${truncateText(book.description, 30)}</p>
+                    <p><small class="text-muted">ISBN: ${book.isbn}</small></p>
+                </td>
             `;
-            resultsDiv.appendChild(bookDiv);
+            tableBody.appendChild(row);
         });
 
         if (currentIndex + booksPerPage < allBooks.length) {
@@ -71,20 +67,22 @@ document.addEventListener('DOMContentLoaded', function() {
         displayResults(allBooks.slice(currentIndex, currentIndex + booksPerPage));
     }
 
-    function shrinkSearchArea() {
-        searchArea.classList.add('shrink');
-        expandButton.style.display = 'block';
-    }
+// ... (keep the existing code at the beginning)
 
-    function expandSearchArea() {
-        searchArea.classList.remove('shrink');
-        expandButton.style.display = 'none';
-        resultsDiv.innerHTML = '';
-        const moreButton = document.getElementById('moreButton');
-        if (moreButton) moreButton.style.display = 'none';
-        resetSearch();
-    }
+function shrinkSearchArea() {
+    document.getElementById('searchAreaWrapper').style.display = 'none';
+    expandButton.style.display = 'block';
+}
 
+function expandSearchArea() {
+    document.getElementById('searchAreaWrapper').style.display = 'flex';
+    expandButton.style.display = 'none';
+    resultsDiv.innerHTML = '';
+    resetSearch();
+    window.scrollTo(0, 0);
+}
+
+// ... (keep the rest of the code the same)
     function resetSearch() {
         searchButton.textContent = 'Search';
         searchButton.classList.remove('btn-secondary');
@@ -116,8 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (data.length > 0) {
                 allBooks = data;
-                displayResults(allBooks.slice(0, booksPerPage));
                 shrinkSearchArea();
+                displayResults(allBooks.slice(0, booksPerPage));
             } else {
                 resultsDiv.innerHTML = '<p>No books found. Please try a different search.</p>';
             }
@@ -141,8 +139,22 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
     });
 
-    // Theme selector
+    function applyTheme(theme) {
+        if (theme === 'default') {
+            themeLink.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css';
+        } else {
+            themeLink.href = `https://bootswatch.com/5/${theme}/bootstrap.min.css`;
+        }
+    }
+
     themeSelector.addEventListener('change', function() {
-        document.body.className = this.value === 'dark' ? 'dark-theme' : '';
+        const selectedTheme = this.value;
+        applyTheme(selectedTheme);
+        localStorage.setItem('selectedTheme', selectedTheme);
     });
+
+    // Load saved theme or set to darkly if no theme is saved
+    const savedTheme = localStorage.getItem('selectedTheme') || 'darkly';
+    themeSelector.value = savedTheme;
+    applyTheme(savedTheme);
 });
