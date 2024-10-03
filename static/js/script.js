@@ -1,6 +1,6 @@
 let allBooks = [];
 let currentIndex = 0;
-const booksPerPage = 10;
+const booksPerPage = 10; 
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('searchForm');

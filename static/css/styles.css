@@ -2,22 +2,21 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-.dark-theme {
-    background-color: #333;
-    color: #fff;
+#searchArea {
+    transition: all 0.3s ease;
 }
 
-.dark-theme .card {
-    background-color: #444;
-    color: #fff;
+#searchArea.centered {
+    display: flex;
+    justify-content: center;
 }
 
-.dark-theme .card-text {
-    color: #ddd;
+#searchArea.hidden {
+    display: none;
 }
 
-.dark-theme .text-muted {
-    color: #aaa !important;
+#results {
+    transition: all 0.3s ease;
 }
 
 .modal {
@@ -97,15 +96,6 @@ body {
     background-color: #45a049;
 }
 
-#searchArea {
-    transition: all 0.3s ease-out;
-}
-
-#searchArea.shrink {
-    transform: scale(0.8);
-    opacity: 0.8;
-}
-
 #expandButton {
     position: fixed;
     bottom: 20px;
@@ -126,4 +116,39 @@ body {
     right: 10px;
     display: flex;
     align-items: center;
+}
+
+.table img {
+    max-width: 100px;
+    height: auto;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table h5 {
+    margin-bottom: 0.5rem;
+}
+
+.table p {
+    margin-bottom: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #imageModal .modal-content {
+        max-width: 90%;
+    }
+
+    #imageModal img {
+        height: auto;
+        max-width: 100%;
+    }
+
+    .theme-visitor-container {
+        position: static;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
 }
