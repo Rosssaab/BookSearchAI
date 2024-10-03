@@ -10,7 +10,7 @@
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0,0,0,0.7); /* Lighter background */
+        background-color: rgba(0,0,0,0.7);
     }
     .modal-content {
         background-color: #fefefe;
@@ -43,14 +43,14 @@
     }
     #imageModal .modal-content {
         width: auto;
-        max-width: 70%; /* Slightly reduced from 95% */
+        max-width: 70%;
         background-color: transparent;
         border: none;
         box-shadow: none;
     }
     #imageModal img {
         max-width: none;
-        height: 55vh; /* Reduced from 85vh */
+        height: 55vh;
         width: auto;
         object-fit: contain;
         box-shadow: 0 0 30px rgba(255,255,255,0.2);
@@ -69,17 +69,22 @@
     #buyButton:hover {
         background-color: #45a049;
     }
-    #isbnText {
-        color: white;
-        font-size: 1.2em;
-        margin-top: 10px;
+    #collapseSearch {
+        transition: all 0.3s ease-out;
+    }
+    #expandSearchButton {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: none;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
+<div class="container mt-5">
+    <div id="collapseSearch" class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
             <h1 class="text-center mb-4">Ross's Demo AI Book Search</h1>
             <form id="searchForm">
@@ -104,6 +109,10 @@
     <div id="results" class="mt-4"></div>
 </div>
 
+<button id="expandSearchButton" class="btn btn-primary">
+    <i class="fas fa-search"></i> Search Again
+</button>
+
 <!-- Searching Modal -->
 <div id="searchingModal" class="modal">
     <div class="modal-content">
@@ -120,132 +129,11 @@
 <div id="imageModal" class="modal">
     <div class="modal-content">
         <img id="modalImage" src="" alt="Book Cover">
-        <p id="isbnText"></p>
         <a id="buyButton" href="#" target="_blank" class="btn btn-primary btn-lg">Buy</a>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchForm = document.getElementById('searchForm');
-    const resultsDiv = document.getElementById('results');
-    const searchButton = document.getElementById('searchButton');
-    const searchingModal = document.getElementById('searchingModal');
-    const imageModal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage');
-    const buyButton = document.getElementById('buyButton');
-    const isbnText = document.getElementById('isbnText');
-
-    function truncateText(text, limit) {
-        const words = text.split(' ');
-        if (words.length > limit) {
-            return words.slice(0, limit).join(' ') + '...';
-        }
-        return text;
-    }
-
-    function displayResults(books) {
-        resultsDiv.innerHTML = '';
-        books.forEach(book => {
-            const bookElement = document.createElement('div');
-            bookElement.className = 'card mb-3';
-            const truncatedDescription = truncateText(book.description, 50);
-            const amazonSearchParam = book.isbn ? book.isbn : encodeURIComponent(book.title);
-            const largeImageUrl = book.imageLinks?.large || book.imageLinks?.thumbnail || 'placeholder.jpg';
-            bookElement.innerHTML = `
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="${book.imageLinks?.thumbnail || 'placeholder.jpg'}" class="img-fluid rounded-start book-image" alt="${book.title}" data-full-image="${largeImageUrl}" data-amazon-link="https://www.amazon.co.uk/s?k=${amazonSearchParam}" data-isbn="${book.isbn || 'ISBN not available'}">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <h5 class="card-title">${book.title}</h5>
-                            <p class="card-text">Author(s): ${book.authors.join(', ')}</p>
-                            <p class="card-text">Published: ${book.publishedDate}</p>
-                            <p class="card-text description">${truncatedDescription}</p>
-                            ${book.description.split(' ').length > 50 ? '<a href="#" class="read-more">Read more</a>' : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            resultsDiv.appendChild(bookElement);
-
-            // Add event listener for "Read more" link
-            const readMoreLink = bookElement.querySelector('.read-more');
-            if (readMoreLink) {
-                readMoreLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const descriptionElement = bookElement.querySelector('.description');
-                    descriptionElement.textContent = book.description;
-                    this.style.display = 'none';
-                });
-            }
-
-            // Add event listener for book image
-            const bookImage = bookElement.querySelector('.book-image');
-            bookImage.addEventListener('click', function() {
-                modalImage.src = this.dataset.fullImage;
-                buyButton.href = this.dataset.amazonLink;
-                // isbnText.textContent = `ISBN: ${this.dataset.isbn}`;
-                imageModal.style.display = 'block';
-            });
-        });
-        searchButton.textContent = 'New Search';
-        searchButton.classList.remove('btn-primary');
-        searchButton.classList.add('btn-secondary');
-    }
-
-    function resetSearch() {
-        resultsDiv.innerHTML = '';
-        searchButton.textContent = 'Search';
-        searchButton.classList.remove('btn-secondary');
-        searchButton.classList.add('btn-primary');
-    }
-
-    searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (searchButton.textContent === 'New Search') {
-            resetSearch();
-        } else {
-            const author = document.getElementById('authorInput').value;
-            const title = document.getElementById('titleInput').value;
-            const subject = document.getElementById('subjectInput').value;
-            const searchParams = new URLSearchParams({
-                author: author,
-                title: title,
-                subject: subject
-            });
-            searchingModal.style.display = 'block';
-
-            fetch('/search?' + searchParams.toString(), {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(books => {
-                searchingModal.style.display = 'none';
-                displayResults(books);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                searchingModal.style.display = 'none';
-                resultsDiv.innerHTML = '<p>An error occurred while fetching results.</p>';
-            });
-        }
-    });
-
-    // Close the image modal when clicking outside the image or on the image itself
-    imageModal.addEventListener('click', function(e) {
-        if (e.target === imageModal || e.target === modalImage) {
-            imageModal.style.display = 'none';
-        }
-    });
-
-    // Prevent the modal from closing when clicking on the Buy button
-    buyButton.addEventListener('click', function(e) {
-        e.stopPropagation();
-    });
-});
-</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}
