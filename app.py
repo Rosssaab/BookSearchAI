@@ -2,9 +2,13 @@ import os
 from flask import Flask, render_template, request, jsonify
 import requests
 from datetime import datetime
+import logging
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Get API key from environment variable
 GOOGLE_BOOKS_API_KEY = os.environ.get('GOOGLE_BOOKS_API_KEY')
@@ -12,7 +16,7 @@ GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes'
 
 # Check if API key is set
 if not GOOGLE_BOOKS_API_KEY:
-    print("Warning: GOOGLE_BOOKS_API_KEY is not set in the environment variables")
+    logging.warning("GOOGLE_BOOKS_API_KEY is not set in the environment variables")
 
 # Visitor counter function
 def get_visitor_count():
@@ -32,64 +36,70 @@ def get_visitor_count():
 @app.route('/')
 def index():
     current_year = datetime.now().year
-    genres = ["Fiction", "Non-fiction", "Science Fiction", "Mystery", "Romance", "Biography", "History", "Self-help", "Thriller", "Fantasy"]
     visitor_count = get_visitor_count()
-    return render_template('index.html', current_year=current_year, genres=genres, visitor_count=visitor_count)
+    return render_template('index.html', current_year=current_year, visitor_count=visitor_count)
 
 @app.route('/search', methods=['GET'])
 def search():
-    start_year = request.args.get('start_year', '1950')
-    end_year = request.args.get('end_year', str(datetime.now().year))
-    author = request.args.get('author', '')
-    title = request.args.get('title', '')
-    subject = request.args.get('subject', '')
-    genres = request.args.getlist('genres')
+    try:
+        logging.debug(f"Search parameters: {request.args}")
+        author = request.args.get('author', '')
+        title = request.args.get('title', '')
+        subject = request.args.get('subject', '')
 
-    query_parts = []
-    if title:
-        query_parts.append(f'intitle:{title}')
-    if author:
-        query_parts.append(f'inauthor:{author}')
-    if subject:
-        query_parts.append(f'subject:{subject}')
-    if genres:
-        query_parts.extend(f'subject:{genre}' for genre in genres)
+        query_parts = []
+        if title:
+            query_parts.append(f'intitle:{title}')
+        if author:
+            query_parts.append(f'inauthor:{author}')
+        if subject:
+            query_parts.append(f'subject:{subject}')
 
-    query = ' '.join(query_parts)
+        query = ' '.join(query_parts)
+        logging.debug(f"Query: {query}")
 
-    params = {
-        'q': query,
-        'key': GOOGLE_BOOKS_API_KEY,
-        'maxResults': 40,
-        'langRestrict': 'en'
-    }
+        if not query:
+            logging.warning("No search criteria provided")
+            return jsonify([])
 
-    response = requests.get(GOOGLE_BOOKS_API_URL, params=params)
-    
-    if response.status_code == 200:
+        params = {
+            'q': query,
+            'key': GOOGLE_BOOKS_API_KEY,
+            'maxResults': 40,
+            'langRestrict': 'en'
+        }
+
+        response = requests.get(GOOGLE_BOOKS_API_URL, params=params)
+        logging.debug(f"API response status: {response.status_code}")
+        response.raise_for_status()
+        
         books_data = response.json().get('items', [])
+        logging.debug(f"Number of books found: {len(books_data)}")
+
         books = []
         for book in books_data:
             volume_info = book.get('volumeInfo', {})
-            published_date = volume_info.get('publishedDate', '')[:4]
-            if start_year <= published_date <= end_year:
-                isbn = 'No ISBN'
-                for identifier in volume_info.get('industryIdentifiers', []):
-                    if identifier.get('type') in ['ISBN_13', 'ISBN_10']:
-                        isbn = identifier.get('identifier')
-                        break
-                books.append({
-                    'title': volume_info.get('title', 'Unknown Title'),
-                    'authors': volume_info.get('authors', ['Unknown Author']),
-                    'publishedDate': published_date,
-                    'description': volume_info.get('description', 'No description available'),
-                    'imageLinks': volume_info.get('imageLinks', {}),
-                    'isbn': isbn
-                })
+            isbn = 'No ISBN'
+            for identifier in volume_info.get('industryIdentifiers', []):
+                if identifier.get('type') in ['ISBN_13', 'ISBN_10']:
+                    isbn = identifier.get('identifier')
+                    break
+            books.append({
+                'title': volume_info.get('title', 'Unknown Title'),
+                'authors': volume_info.get('authors', ['Unknown Author']),
+                'publishedDate': volume_info.get('publishedDate', '')[:4],
+                'description': volume_info.get('description', 'No description available'),
+                'imageLinks': volume_info.get('imageLinks', {}),
+                'isbn': isbn
+            })
         return jsonify(books)
-    else:
-        return jsonify({'error': 'Failed to fetch books from Google Books API'}), 500
+    except requests.RequestException as e:
+        logging.error(f"Error fetching books: {e}")
+        return jsonify({'error': str(e)}), 500
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({'error': 'An unexpected error occurred'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)

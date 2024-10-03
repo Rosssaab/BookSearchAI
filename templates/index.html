@@ -84,21 +84,28 @@
         display: none;
     }
     #visitorCounter {
-        position: fixed;
+        display: inline-block;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    .theme-visitor-container {
+        position: absolute;
         top: 10px;
         right: 10px;
-        background-color: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-size: 0.9em;
+        display: flex;
+        align-items: center;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div id="visitorCounter">Visitors: {{ visitor_count }}</div>
-
+<div class="theme-visitor-container">
+    <span id="visitorCounter">Visitors: {{ visitor_count }}</span>
+    <select id="themeSelector" class="form-select form-select-sm" style="width: auto;">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+    </select>
+</div>
 <div class="container mt-5">
     <div id="searchArea" class="row justify-content-center">
         <div class="col-12 col-md-8 col-lg-6">
